@@ -21,6 +21,8 @@ public:
 		this->editKey = editKey;
 		this->path = wstring(folderPath) + wstring(file);
 		this->type = type;
+
+		CoTaskMemFree(folderPath);
 	}
 
 	set<string> getHosts() {
