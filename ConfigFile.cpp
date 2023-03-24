@@ -9,14 +9,17 @@
 
 using namespace std;
 
-ConfigFile::ConfigFile(REFKNOWNFOLDERID folder, LPCWSTR file, string editKey, string type) {
+ConfigFile::ConfigFile(wstring cPath, string cEditKey, string cType)
+	: path{ cPath }, editKey{ cEditKey }, type{ cType } { }
+
+ConfigFile::ConfigFile(REFKNOWNFOLDERID folder, LPCWSTR file, string cEditKey, string cType)
+	: editKey{ cEditKey }, type{ cType } {
 	PWSTR folderPath;
 
 	SHGetKnownFolderPath(folder, NULL, NULL, &folderPath);
 
-	this->editKey = editKey;
-	this->path = wstring(folderPath) + wstring(file);
-	this->type = type;
+	path = wstring(folderPath);
+	path.append(file);
 
 	CoTaskMemFree(folderPath);
 }

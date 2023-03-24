@@ -14,6 +14,7 @@ public:
 	wstring path;
 	string type;
 
+	ConfigFile(wstring path, string editKey, string type);
 	ConfigFile(REFKNOWNFOLDERID folder, LPCWSTR file, string editKey, string type);
 
 	set<string> getHosts();
