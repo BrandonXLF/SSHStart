@@ -22,4 +22,5 @@ public:
 
 private:
 	const char* whitespace = "\t ";
+	const char* separator = "\t =";
 };
