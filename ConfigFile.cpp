@@ -9,25 +9,25 @@
 
 using namespace std;
 
-ConfigFile::ConfigFile(wstring cPath, string cEditKey, string cType)
-	: path{ cPath }, editKey{ cEditKey }, type{ cType } { }
+ConfigFile::ConfigFile(wstring cFolderPath, wstring cFilePath, string cType, char cEditKey)
+	: folderPath{ cFolderPath }, filePath{ cFilePath }, type{ cType }, editKey{ cEditKey } { }
 
-ConfigFile::ConfigFile(REFKNOWNFOLDERID folder, LPCWSTR file, string cEditKey, string cType)
-	: editKey{ cEditKey }, type{ cType } {
-	PWSTR folderPath;
+ConfigFile::ConfigFile(REFKNOWNFOLDERID knownFolderID, LPCWSTR folder, LPCWSTR file, string cType, char cEditKey)
+	: type{ cType }, editKey{ cEditKey } {
 
-	SHGetKnownFolderPath(folder, NULL, NULL, &folderPath);
+	LPWSTR knownFolder;
+	SHGetKnownFolderPath(knownFolderID, NULL, NULL, &knownFolder);
 
-	path = wstring(folderPath);
-	path.append(file);
+	folderPath = wstring(knownFolder) + L"\\" + folder;
+	filePath = folderPath + L"\\" + file;
 
-	CoTaskMemFree(folderPath);
+	CoTaskMemFree(knownFolder);
 }
 
 set<string> ConfigFile::getHosts() {
 	set<string> hosts;
 
-	ifstream file(this->path.c_str());
+	ifstream file(filePath.c_str());
 
 	if (!file.good())
 		return hosts;
@@ -80,12 +80,15 @@ set<string> ConfigFile::getHosts() {
 }
 
 void ConfigFile::edit() {
+	if (GetFileAttributes(folderPath.c_str()) == INVALID_FILE_ATTRIBUTES)
+		CreateDirectory(folderPath.c_str(), NULL);
+
 	SHELLEXECUTEINFO execInfo{};
 	execInfo.cbSize = sizeof(SHELLEXECUTEINFO);
 	execInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
 	execInfo.lpVerb = L"open";
 	execInfo.lpFile = L"notepad";
-	execInfo.lpParameters = this->path.c_str();
+	execInfo.lpParameters = filePath.c_str();
 	execInfo.nShow = SW_SHOW;
 
 	ShellExecuteEx(&execInfo);
