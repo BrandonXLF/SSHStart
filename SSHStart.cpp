@@ -55,7 +55,7 @@ string selectChoice(string error = "") {
 	
 	try {
 		choice = stoi(line) - 1;
-	} catch (invalid_argument) {
+	} catch (...) {
 		return selectChoice("Invalid choice");
 	}
 
