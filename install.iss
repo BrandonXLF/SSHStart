@@ -9,7 +9,7 @@ DefaultGroupName = SSHStart
 SetupIconFile = img\icon.ico
 WizardSmallImageFile = img\icon.bmp
 UninstallDisplayName = SSHStart
-UninstallDisplayIcon = {app}\bin\sshstart.exe,0
+UninstallDisplayIcon = {app}\bin\sshs.exe,0
 ChangesEnvironment = yes
 OutputDir = x64
 AppPublisher = Brandon Fowler
@@ -24,12 +24,11 @@ Name: "custom"; Description: "Custom installation"; Flags: iscustom
 [Components]
 Name: desktop; Description: Create a desktop icon; Types: full basic
 Name: start; Description: Add to start menu; Types: full basic
-Name: sshs; Description: Add sshs shortcut to bin; Types: full basic
 Name: terminal; Description: Create a Windows Terminal profile; Types: full
 Name: path; Description: Add to path; Types: full
 
 [Files]
-Source: "x64\Release\SSHStart.exe"; DestDir: "{app}\bin"; DestName: sshstart.exe
+Source: "x64\Release\sshs.exe"; DestDir: "{app}\bin"; DestName: sshs.exe
 Source: "img\icon.ico"; DestDir: "{app}"
 
 [Dirs]
@@ -38,9 +37,9 @@ Name: "{commonappdata}\Microsoft\Windows Terminal\Fragments\SSHStart"; Component
 Name: "{localappdata}\Microsoft\Windows Terminal\Fragments\SSHStart"; Components: terminal; Check: not IsAdminLoggedOn
 
 [Icons]
-Name: "{commondesktop}\SSHStart"; Filename: "{app}\bin\sshstart.exe"; Components: desktop; Check: IsAdminLoggedOn
-Name: "{userdesktop}\SSHStart"; Filename: "{app}\bin\sshstart.exe"; Components: desktop; Check: not IsAdminLoggedOn
-Name: "{group}\SSHStart"; Filename: "{app}\bin\sshstart.exe"; Components: start;
+Name: "{commondesktop}\SSHStart"; Filename: "{app}\bin\sshs.exe"; Components: desktop; Check: IsAdminLoggedOn
+Name: "{userdesktop}\SSHStart"; Filename: "{app}\bin\sshs.exe"; Components: desktop; Check: not IsAdminLoggedOn
+Name: "{group}\SSHStart"; Filename: "{app}\bin\sshs.exe"; Components: start;
 
 [Registry]
 Root: HKCU; Subkey: "Environment"; \
@@ -52,7 +51,7 @@ Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environmen
 	Check: IsAdminLoggedOn and PathNeeded(true, 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment')
 
 [Run]
-Filename: "{app}\bin\sshstart.exe"; Description: "Launch SSHStart"; Flags: postinstall
+Filename: "{app}\bin\sshs.exe"; Description: "Launch SSHStart"; Flags: postinstall
 
 [UninstallDelete]
 // File must be deleted first, so Dirs entry does not delete folder
@@ -104,35 +103,32 @@ begin
     RegWriteStringValue(Root, Key, 'Path', Path)
 end;
 
-procedure CurStepChanged(CurStep:TSetupStep);
-	var JSONPath, AppPath, AppPathEsc: String;
-	begin
+procedure WriteTerminalFragment();
+var
+	JSONPath, AppPath: String;
+begin
+	if IsAdminInstallMode() then begin
+		JSONPath := ExpandConstant('{commonappdata}\Microsoft\Windows Terminal\Fragments\SSHStart\SSHStart.json')
+	end
+	else begin
+		JSONPath := ExpandConstant('{localappdata}\Microsoft\Windows Terminal\Fragments\SSHStart\SSHStart.json')
+	end;		 
 
-	if CurStep<>ssPostInstall then Exit;
-	
 	AppPath := ExpandConstant('{app}');
+	StringChangeEx(AppPath, '\', '\\', True);
 
-	if IsComponentSelected('terminal') then begin
-		if IsAdminInstallMode() then begin
-			JSONPath := ExpandConstant('{commonappdata}\Microsoft\Windows Terminal\Fragments\SSHStart\SSHStart.json')
-		end
-		else begin
-			JSONPath := ExpandConstant('{localappdata}\Microsoft\Windows Terminal\Fragments\SSHStart\SSHStart.json')
-		end;		 
+	SaveStringToFile(
+		JSONPath,
+		'{"profiles":[{"guid":"{e7d3c5fe-cd36-5b65-9dba-4d51e4c6b5d5}","name":"SSHStart","commandline":"' + AppPath + '\\bin\\sshs.exe","icon":"' + AppPath + '\\icon.ico"}]}',
+		False
+	);
+end;
 
-		AppPathEsc := AppPath;
-		StringChangeEx(AppPathEsc, '\', '\\', True);
+procedure CurStepChanged(CurStep: TSetupStep);
+begin
+	if CurStep<>ssPostInstall then Exit;
 
-		SaveStringToFile(
-			JSONPath,
-			'{"profiles":[{"guid":"{e7d3c5fe-cd36-5b65-9dba-4d51e4c6b5d5}","name":"SSHStart","commandline":"' + AppPathEsc + '\\bin\\sshstart.exe","icon":"' + AppPathEsc + '\\icon.ico"}]}',
-			False
-		);
-	end;
-
-	if IsComponentSelected('sshs') then begin
-		SaveStringToFile(AppPath + '\bin\sshs.cmd', + '@"' + AppPath + '\bin\sshstart.exe" %*', False);
-	end;
+	if WizardIsComponentSelected('terminal') then WriteTerminalFragment;
 end;
 
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
