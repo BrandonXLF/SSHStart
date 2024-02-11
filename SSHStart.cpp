@@ -1,17 +1,19 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <optional>
 #include <windows.h>
 #include <knownfolders.h>
 #include "HostNames.h"
 #include "ConfigFile.h"
+#include "Result.h"
 
 using namespace std;
 
 vector<ConfigFile*> files;
 HostNames* hostNames;
 
-void showChoices(string error = "") {
+static string getChoice(optional<string> error) {
 	system("cls");
 
 	cout << "SSHStart" << endl << endl;
@@ -30,39 +32,44 @@ void showChoices(string error = "") {
 
 	cout << endl;
 
-	if (error != "")
-		cout << "Error: " << error << endl << endl;
+	if (error.has_value())
+		cout << "Error: " << error.value() << endl << endl;
 
 	cout << "Choose: ";
-}
-
-string selectChoice(string error = "") {
-	showChoices(error);
 
 	string line;
 	getline(cin, line);
 
+	return line;
+}
+
+static Result processChoice(string choice) {
+	if (choice.empty()) {
+		return {};
+	}
+
 	for (ConfigFile* file : files) {
-		if (line.size() > 1 || line[0] != file->editKey) continue;
+		if (choice.size() > 1 || choice[0] != file->editKey) continue;
 
 		file->edit();
 		hostNames->reload();
 
-		return selectChoice();
+		return {};
 	}
 
-	int choice;
-	
+	int index;
+
 	try {
-		choice = stoi(line) - 1;
+		index = stoi(choice) - 1;
 	} catch (...) {
-		return selectChoice("Invalid choice");
+		return { .error = "Invalid choice" };
 	}
 
-	if (choice < 0 || choice >= hostNames->hosts.size())
-		return selectChoice("Choice out of range");
+	if (index < 0 || index >= hostNames->hosts.size()) {
+		return { .error = "Choice out of range" };
+	}
 
-	return *next(hostNames->hosts.begin(), choice);
+	return { *next(hostNames->hosts.begin(), index) };
 }
 
 int main() {
@@ -74,12 +81,15 @@ int main() {
 
 	hostNames = new HostNames(&files);
 
-	string choice = selectChoice();
+	Result result;
 
-	cout << endl;
+	while (!result.choice.has_value()) {
+		string choice = getChoice(result.error);
+		result = processChoice(choice);
+	}
 
 	system("cls");
-	system(("ssh " + choice).c_str());
+	system(("ssh " + result.choice.value()).c_str());
 
 	delete hostNames;
 
