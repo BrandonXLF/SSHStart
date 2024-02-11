@@ -22,10 +22,10 @@
     <VCProjectVersion>17.0</VCProjectVersion>
     <ProjectGuid>{0FD5FDD0-ADF1-4ACB-A96E-70AC37D7CC32}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>SSHStartTests</RootNamespace>
+    <RootNamespace>SSHStartTest</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectSubType>NativeUnitTestProject</ProjectSubType>
-    <ProjectName>tests</ProjectName>
+    <ProjectName>SSHStartTest</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -169,7 +169,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="tests.cpp" />
+    <ClCompile Include="SSHStartTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SSHStart\SSHStart.vcxproj">
