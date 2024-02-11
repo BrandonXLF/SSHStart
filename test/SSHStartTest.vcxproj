@@ -172,7 +172,7 @@
     <ClCompile Include="SSHStartTest.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SSHStart\SSHStart.vcxproj">
+    <ProjectReference Include="..\src\SSHStart.vcxproj">
       <Project>{5a0939be-8205-4238-b1c4-5eb2116eb226}</Project>
     </ProjectReference>
   </ItemGroup>
