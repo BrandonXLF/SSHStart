@@ -1,6 +1,6 @@
 [Setup]
 AppName = SSHStart
-AppVersion = 1.0.2
+AppVersion = 1.0.3
 DefaultDirName = {autopf}\SSHStart
 OutputBaseFilename = SSHStart Installer
 PrivilegesRequiredOverridesAllowed = Dialog
